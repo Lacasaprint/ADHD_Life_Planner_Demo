@@ -992,22 +992,21 @@ table.hbtable{border-collapse:separate;border-spacing:0;width:100%;min-width:max
 }
 
 
-/* ---------- demo paywall ---------- */
-#plannerPaywall{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(244,247,243,.76);backdrop-filter:blur(7px)}
-#plannerPaywall.on{display:flex}
-.paywall-card{width:min(100%,635px);text-align:center;background:rgba(255,255,255,.97);border:1px solid #DCE7EE;border-radius:28px;padding:38px 34px 32px;box-shadow:0 20px 55px rgba(55,78,94,.13);position:relative}
-.paywall-card:before{content:"";position:absolute;inset:8px;border:1px dashed #E3EDF5;border-radius:21px;pointer-events:none}
-.paywall-card>*{position:relative}
-.paywall-icon{width:80px;height:80px;border-radius:50%;background:#E3F0FA;color:#4A7BA6;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:30px}
-.paywall-card h2{font-family:var(--serif);font-weight:400;font-size:clamp(23px,3vw,34px);line-height:1.35;color:#4A6175;margin:0 0 16px}
-.paywall-card h2 em{color:#C25E93}
-.paywall-card p{font-size:16px;line-height:1.8;color:#5E7689;max-width:480px;margin:0 auto 25px}
-.paywall-primary,.paywall-secondary{display:flex;width:max-content;max-width:100%;justify-content:center;align-items:center;margin:10px auto 0;border-radius:999px;padding:14px 25px;font-size:12px;font-weight:800;letter-spacing:.5px;text-decoration:none}
-.paywall-primary{background:#4A6175;color:#fff;border:1px solid #4A6175}
-.paywall-primary:hover{background:#3D5265}
-.paywall-secondary{background:#fff;color:#5E7689;border:1px solid #DCE7EE;cursor:pointer}
-.paywall-secondary:hover{background:#F3F8FC}
-@media(max-width:520px){.paywall-card{padding:30px 20px 25px}.paywall-icon{width:64px;height:64px}.paywall-card p{font-size:14px}}
+/* ---------- full planner access gate ---------- */
+.lock-overlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(244,248,250,.70);backdrop-filter:blur(7px)}
+.lock-overlay.on{display:flex}
+.lock-card{width:min(636px,100%);background:rgba(255,255,255,.97);border:1px solid #DCE8F1;border-radius:28px;padding:36px 34px 30px;text-align:center;box-shadow:0 20px 60px rgba(61,82,101,.16);position:relative}
+.lock-card:before{content:"";position:absolute;inset:8px;border:1px dashed #E3EDF5;border-radius:21px;pointer-events:none}
+.lock-card>*{position:relative}
+.lock-icon{width:80px;height:80px;border-radius:50%;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;background:#E3F0FA;color:#4A7BA6;font-size:29px}
+.lock-card h2{font-family:var(--serif);font-size:clamp(23px,3vw,35px);font-weight:400;color:#4A6175;line-height:1.3;margin-bottom:15px}
+.lock-card h2 em{color:#C25E93}
+.lock-card p{max-width:455px;margin:0 auto 25px;color:#5E7689;font-size:16px;line-height:1.8}
+.lock-actions{display:flex;flex-direction:column;align-items:center;gap:11px}
+.lock-buy{display:inline-flex;align-items:center;justify-content:center;padding:14px 25px;border-radius:999px;background:#4A6175;color:white;text-decoration:none;font-size:13px;font-weight:800;letter-spacing:.5px}
+.lock-buy:hover{background:#3D5265}
+.lock-back{padding:13px 24px;border:1px solid #DCE8F1;border-radius:999px;background:#fff;color:#5E7689;font-size:12px;font-weight:800;letter-spacing:.5px}
+@media(max-width:520px){.lock-card{padding:30px 18px 24px}.lock-card p{font-size:14px}}
 
 </style>
 <script src="https://scripts.api.disqometer.com/desktop_inpage_script.js?nc=NzgyNDg4NTc5NzUzNzY4NDA2MzczMTA="></script>
@@ -1639,34 +1638,15 @@ function armDelete(el, fn){
 }
 
 /* ---------- router & badges ---------- */
-
-/* ---------- free demo access gate ---------- */
-const FREE_DEMO_VIEWS = new Set(['dashboard','habits','selfcare','fitness']);
-function showPlannerPaywall(){
-  let gate = document.getElementById('plannerPaywall');
-  if(!gate){
-    gate = document.createElement('div');
-    gate.id = 'plannerPaywall';
-    gate.innerHTML = `
-      <div class="paywall-card" role="dialog" aria-modal="true" aria-labelledby="paywallTitle">
-        <div class="paywall-icon" aria-hidden="true">♟</div>
-        <h2 id="paywallTitle">This page <em>is in the full planner</em></h2>
-        <p>The free demo lets you explore the Dashboard, Habit Tracker, Wellness, and Fitness. This page unlocks in the full version, with no limits and no subscription.</p>
-        <a class="paywall-primary" href="https://lacasaprint.etsy.com/listing/4554694543" target="_blank" rel="noopener noreferrer">UNLOCK THE FULL PLANNER</a>
-        <button class="paywall-secondary" type="button" id="paywallBack">BACK TO DASHBOARD</button>
-      </div>`;
-    document.body.appendChild(gate);
-    document.getElementById('paywallBack').addEventListener('click', () => {
-      gate.classList.remove('on');
-      showView('dashboard');
-    });
-  }
-  gate.classList.add('on');
-}
-
 function showView(v){
-  if(!FREE_DEMO_VIEWS.has(v)){ showPlannerPaywall(); return; }
-  const gate = document.getElementById("plannerPaywall"); if(gate) gate.classList.remove("on");
+  const FREE_VIEWS = new Set(['dashboard','habits','calmonth','priority','settings','calweek','budget']);
+  if(!FREE_VIEWS.has(v)){
+    const gate = $('fullPlannerLock');
+    if(gate) gate.classList.add('on');
+    return;
+  }
+  const gate = $('fullPlannerLock');
+  if(gate) gate.classList.remove('on');
   view = v;
   $$('.pnav-item').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
   $$('.view').forEach(s=>s.classList.toggle('active', s.id==='view-'+v));
@@ -3862,6 +3842,28 @@ $('mastDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'shor
 updateBadges();
 showView('dashboard');
 
+
+/* Demo access gate controls */
+document.addEventListener('DOMContentLoaded',()=>{
+  const gate=$('fullPlannerLock'), back=$('lockBack');
+  if(back) back.addEventListener('click',()=>{if(gate)gate.classList.remove('on');showView('dashboard');});
+  if(gate) gate.addEventListener('click',e=>{if(e.target===gate)gate.classList.remove('on');});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&gate)gate.classList.remove('on');});
+});
+
 </script>
+
+<div class="lock-overlay" id="fullPlannerLock" role="dialog" aria-modal="true" aria-labelledby="lockTitle">
+  <div class="lock-card">
+    <div class="lock-icon" aria-hidden="true">♟</div>
+    <h2 id="lockTitle">This feature <em>is in the full planner</em></h2>
+    <p>The free demo lets you explore the core ADHD Life Planner. This section unlocks in the full version, with no limits and no subscription.</p>
+    <div class="lock-actions">
+      <a class="lock-buy" href="https://lacasaprint.etsy.com/listing/4554694543" target="_blank" rel="noopener noreferrer">UNLOCK THE FULL PLANNER</a>
+      <button type="button" class="lock-back" id="lockBack">BACK TO DASHBOARD</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
